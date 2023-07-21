@@ -35,7 +35,7 @@ async function setup ({ port, logger = true, timeoutS = 5, swarmArgs = {} } = {}
       socket.on('error', e => logger.info(e)) // Usually just unexpectedly closed
     })
 
-    swarm.join(core.discoveryKey)
+    swarm.join(core.discoveryKey, { server: false })
 
     await core.update()
     let success = false
