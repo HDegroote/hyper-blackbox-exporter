@@ -9,10 +9,10 @@ async function setup ({ port, logger = true, timeoutS = 5, swarmArgs = {} } = {}
   const app = fastify({ logger })
   logger = app.log
 
-  app.get('/probe/:key', async function (req, res) {
+  app.get('/probe', async function (req, res) {
     let key
     try {
-      key = decode(req.params.key)
+      key = decode(req.query.target)
     } catch (e) {
       res.status(400)
       res.send('Invalid key')

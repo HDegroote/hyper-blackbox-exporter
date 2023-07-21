@@ -30,7 +30,7 @@ async function getFixtures (t) {
     await testnet.destroy()
   })
 
-  const url = `http://localhost:${app.server.address().port}/probe/`
+  const url = `http://localhost:${app.server.address().port}/probe?target=`
 
   return { swarm, app, core, url }
 }
