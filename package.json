@@ -1,0 +1,39 @@
+{
+  "name": "hyper-blackbox-exporter",
+  "version": "0.0.0",
+  "description": "Prometheus blackbox exporter for Hypercore",
+  "main": "index.js",
+  "scripts": {
+    "test": "standard && brittle test.js --coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HDegroote/hyper-blackbox-exporter.git"
+  },
+  "keywords": [
+    "Prometheys",
+    "blackbox",
+    "exporter",
+    "hypercore"
+  ],
+  "author": "H. Degroote",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/HDegroote/hyper-blackbox-exporter/issues"
+  },
+  "homepage": "https://github.com/HDegroote/hyper-blackbox-exporter#readme",
+  "dependencies": {
+    "corestore": "^6.4.1",
+    "dotenv": "^16.0.3",
+    "fastify": "^4.20.0",
+    "graceful-goodbye": "^1.2.0",
+    "hexkey-utils": "^1.0.2",
+    "hyperdht": "^6.5.3",
+    "hyperswarm": "^4.4.1",
+    "pino": "^8.8.0",
+    "random-access-memory": "^6.2.0"
+  },
+  "devDependencies": {
+    "axios": "^1.4.0"
+  }
+}
