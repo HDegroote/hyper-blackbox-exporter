@@ -1,3 +1,3 @@
 import setup from './index.js'
 
-await setup({ port: 43210 })
+await setup({ port: 43211 })
