@@ -29,18 +29,26 @@ async function setup ({ port, logger = true, timeoutS = 5, swarmArgs = {} } = {}
     const startMs = performance.now()
 
     const swarm = new Hyperswarm(swarmArgs)
+    let first = true
     swarm.on('connection', (socket) => {
+      if (first) {
+        logger.info('First connection')
+        first = false
+      }
       firstConnectionMs = performance.now()
       store.replicate(socket)
       socket.on('error', e => logger.info(e)) // Usually just unexpectedly closed
     })
 
     swarm.join(core.discoveryKey, { server: false })
+    logger.info('Joined swarm')
+    // await core.update()
+    // logger.info('core updated')
 
-    await core.update()
     let success = false
     try {
       const block = await core.get(0, { timeout: timeoutS * 1000 })
+      logger.info('Got block')
       if (block) success = true
     } catch (e) { } // Stay false
     const endMs = performance.now()
