@@ -22,7 +22,7 @@ async function getFixtures (t) {
   swarm.join(core.discoveryKey, { server: true })
   await swarm.flush()
 
-  const app = await setup({ logger: false, timeoutS: 1, swarmArgs: { bootstrap } })
+  const app = await setup({ logger: true, timeoutS: 1, swarmArgs: { bootstrap } })
   t.teardown(async () => {
     await app.close()
     await swarm.destroy()

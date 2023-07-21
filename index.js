@@ -45,7 +45,7 @@ async function setup ({ port, logger = true, timeoutS = 5, swarmArgs = {} } = {}
     } catch (e) { } // Stay false
     const endMs = performance.now()
     const data = formatRes(success,
-      { startMs, endMs, firstConnectionMs }
+      { logger, startMs, endMs, firstConnectionMs }
     )
     res.send(data)
 
@@ -59,9 +59,11 @@ async function setup ({ port, logger = true, timeoutS = 5, swarmArgs = {} } = {}
   return app
 }
 
-function formatRes (success, { startMs, endMs, firstConnectionMs = endMs }) {
+function formatRes (success, { logger, startMs, endMs, firstConnectionMs = endMs }) {
   const firstConnectionS = (firstConnectionMs - startMs) / 1000
   const totalS = (endMs - startMs) / 1000
+
+  logger.info(`Success? ${success} -- first connection (s): ${firstConnectionS} -- total time (s): ${totalS}`)
 
   const res = `
 # HELP probe_first_swarm_connection_time_seconds Returns the time taken to connect to the first peer
