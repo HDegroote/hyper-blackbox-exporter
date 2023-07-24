@@ -7,7 +7,7 @@ const RAM = require('random-access-memory')
 const createTestnet = require('@hyperswarm/testnet')
 const b4a = require('b4a')
 
-async function getFixtures (t) {
+async function getFixtures (t, { timeoutS = 1 } = {}) {
   const testnet = await createTestnet(3)
   const bootstrap = testnet.bootstrap
   const swarm = new Hyperswarm(testnet)
@@ -22,7 +22,7 @@ async function getFixtures (t) {
   swarm.join(core.discoveryKey, { server: true })
   await swarm.flush()
 
-  const app = await setup({ logger: true, timeoutS: 1, swarmArgs: { bootstrap } })
+  const app = await setup({ logger: false, timeoutS, swarmArgs: { bootstrap } })
   t.teardown(async () => {
     await app.close()
     await swarm.destroy()
@@ -38,7 +38,7 @@ async function getFixtures (t) {
 test('probe_success 1 for reachable key', async t => {
   const { core, url } = await getFixtures(t)
 
-  const key = b4a.toString(core.key, 'hex') // '7d2050aa131f1d0dad47723c3ac0a4af2dd087d4269848c9909c6b28c2463b34' // 'a'.repeat(64)
+  const key = b4a.toString(core.key, 'hex')
   const res = await axios.get(`${url}${key}`, { validateStatus: null })
   t.is(res.status, 200)
   t.ok(res.data.includes('probe_success 1'))
@@ -61,4 +61,44 @@ test('400 status on invalid key', async t => {
   const key = 'nope'
   const res = await axios.get(`${url}${key}`, { validateStatus: null })
   t.is(res.status, 400)
+})
+
+test('Can manage multiple requests for same key', async t => {
+  const { core, url } = await getFixtures(t, { timeoutS: 0.5 })
+
+  // Note: should run sufficiently long for the connection-cleanup
+  // logic to trigger, so we test that case while other requests are
+  // still being sent for the same key
+  const key = b4a.toString(core.key, 'hex')
+  const res = []
+  for (let i = 0; i < 500; i++) {
+    const r = await axios.get(`${url}${key}`, { validateStatus: null })
+    res.push(r)
+  }
+
+  t.is(res.filter(r => r.status === 200).length, res.length)
+})
+
+test('Can manage parallel requests for same key', async t => {
+  const { core, url } = await getFixtures(t, { timeoutS: 0.5 })
+
+  // Note: should run sufficiently long for the connection-cleanup
+  // logic to trigger, so we test that case while other requests are
+  // still being sent for the same key
+  const key = b4a.toString(core.key, 'hex')
+  const res = []
+  for (let iter = 0; iter < 50; iter++) {
+    const proms = []
+
+    for (let i = 0; i < 100; i++) {
+      const r = axios.get(`${url}${key}`, { validateStatus: null })
+      proms.push(r)
+    }
+
+    for (const r of await Promise.all(proms)) {
+      res.push(r)
+    }
+  }
+
+  t.is(res.filter(r => r.status === 200).length, res.length)
 })

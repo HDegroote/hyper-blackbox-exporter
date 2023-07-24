@@ -1,13 +1,47 @@
 const fastify = require('fastify')
-const { asHex } = require('hexkey-utils')
 const Hyperswarm = require('hyperswarm')
 const Corestore = require('corestore')
 const ram = require('random-access-memory')
 const { decode } = require('hypercore-id-encoding')
+const DHT = require('hyperdht')
+const FIFO = require('fast-fifo')
 
 async function setup ({ port, logger = true, timeoutS = 5, swarmArgs = {} } = {}) {
   const app = fastify({ logger })
   logger = app.log
+
+  const dht = new DHT(swarmArgs)
+  const store = new Corestore(ram)
+  const swarm = new Hyperswarm({ dht })
+
+  // We don't want to keep the sockets open forever,
+  // as we are mostly interested in ensuring we can find
+  // keys in the DHT
+  const sTillDropConnection = timeoutS * 1000 * 2
+
+  const timeouts = new FIFO()
+  swarm.on('connection', (socket) => {
+    store.replicate(socket)
+    socket.on('error', e => logger.info(e)) // Usually just unexpectedly closed
+
+    timeouts.push(setTimeout(
+      () => {
+        socket.destroy()
+        timeouts.shift()
+      }, sTillDropConnection
+    ))
+  })
+
+  app.addHook('onClose', async () => {
+    logger.info('Detroying the swarm')
+    await swarm.destroy()
+
+    // Clean up pending timeouts as they're no longer relevant (else we hang)
+    while (!timeouts.isEmpty()) clearTimeout(timeouts.shift())
+
+    await store.close()
+    logger.info('Swarm destroyed')
+  })
 
   app.get('/probe', async function (req, res) {
     let key
@@ -19,27 +53,10 @@ async function setup ({ port, logger = true, timeoutS = 5, swarmArgs = {} } = {}
       return
     }
 
-    logger.info(`key ${asHex(key)}`)
-
-    const store = new Corestore(ram)
     const core = store.get({ key })
     await core.ready()
 
-    let firstConnectionMs
     const startMs = performance.now()
-
-    const swarm = new Hyperswarm(swarmArgs)
-    let first = true
-    swarm.on('connection', (socket) => {
-      if (first) {
-        logger.info('First connection')
-        first = false
-      }
-      firstConnectionMs = performance.now()
-      store.replicate(socket)
-      socket.on('error', e => logger.info(e)) // Usually just unexpectedly closed
-    })
-
     swarm.join(core.discoveryKey, { server: false })
     logger.info('Joined swarm')
     // await core.update()
@@ -50,16 +67,16 @@ async function setup ({ port, logger = true, timeoutS = 5, swarmArgs = {} } = {}
       const block = await core.get(0, { timeout: timeoutS * 1000 })
       logger.info('Got block')
       if (block) success = true
-    } catch (e) { } // Stay false
+    } catch (e) { // Stay false
+    } finally {
+      // Clear up memory + ensure it needs downloading again if called multiple times
+      await core.purge()
+    }
     const endMs = performance.now()
     const data = formatRes(success,
-      { logger, startMs, endMs, firstConnectionMs }
+      { logger, startMs, endMs }
     )
     res.send(data)
-
-    await swarm.destroy()
-    logger.info('swarm closed')
-    await store.close()
   })
 
   await app.listen({ port })
@@ -67,16 +84,11 @@ async function setup ({ port, logger = true, timeoutS = 5, swarmArgs = {} } = {}
   return app
 }
 
-function formatRes (success, { logger, startMs, endMs, firstConnectionMs = endMs }) {
-  const firstConnectionS = (firstConnectionMs - startMs) / 1000
+function formatRes (success, { logger, startMs, endMs }) {
   const totalS = (endMs - startMs) / 1000
-
-  logger.info(`Success? ${success} -- first connection (s): ${firstConnectionS} -- total time (s): ${totalS}`)
+  logger.info(`Success? ${success} -- total time (s): ${totalS}`)
 
   const res = `
-# HELP probe_first_swarm_connection_time_seconds Returns the time taken to connect to the first peer
-# TYPE probe_first_swarm_connection_time_seconds gauge
-probe_first_swarm_connection_time_seconds ${firstConnectionS}
 # HELP probe_duration_seconds Returns how long the probe took to complete in seconds
 # TYPE probe_duration_seconds gauge
 probe_duration_seconds ${totalS}
