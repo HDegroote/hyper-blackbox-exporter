@@ -1,1 +1,55 @@
 # Hyper Blackbox Exporter
+
+A prometheus exporter to get basic metrics about hypercores. It uses the [multi-exporter pattern](https://prometheus.io/docs/guides/multi-target-exporter/).
+
+Includes metrics:
+- `hyper_probe_success`: whether a hypercore can be located and its first block downloaded
+- `hyper_probe_duration_seconds`: how long it takes to locate the hypercore and download the first block
+
+## Install
+
+`npm i -g hyper-blackbox-exporter`
+
+## Usage
+
+`hyper-blackbox-exporter`
+
+Then from another terminal:
+
+`curl http://127.0.0.1:43211/probe?target=<key>`
+
+For example:
+curl http://127.0.0.1:43211/probe?target=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+Output example:
+```
+# HELP hyper_probe_duration_seconds Returns how long the probe took to complete in seconds
+# TYPE hyper_probe_duration_seconds gauge
+hyper_probe_duration_seconds 0.2541881100013852
+# HELP hyper_probe_success Displays whether or not the probe was a success
+# TYPE hyper_probe_success gauge
+hyper_probe_success 1
+```
+
+## Prometheus Config
+
+This endpoint can be scraped with the following config, entering your own hypercore keys under targets and replacing the `__address__` entry with the URL to your hyper-blackbox-exporter's URL.
+
+```
+  - job_name: hyperblackbox-exporter
+    metrics_path: /probe
+    scheme: https
+    scrape_timeout: 25s
+    scrape_interval: 30s
+    static_configs:
+      - targets:
+        - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        - bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: hypercoreKey
+      - target_label: __address__
+        replacement: myUrl:8080
+```
