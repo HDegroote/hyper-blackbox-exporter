@@ -83,7 +83,6 @@ async function setup ({ port, logger = true, timeoutS = 5, swarmArgs = {} } = {}
 
 function formatRes (success, { logger, startMs, endMs }) {
   const totalS = (endMs - startMs) / 1000
-  logger.info(`Success? ${success} -- total time (s): ${totalS}`)
 
   const res = `
 # HELP hyper_probe_duration_seconds Returns how long the probe took to complete in seconds
