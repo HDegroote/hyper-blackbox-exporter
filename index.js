@@ -58,9 +58,6 @@ async function setup ({ port, logger = true, timeoutS = 5, swarmArgs = {} } = {}
 
     const startMs = performance.now()
     swarm.join(core.discoveryKey, { server: false })
-    logger.info('Joined swarm')
-    // await core.update()
-    // logger.info('core updated')
 
     let success = false
     try {
@@ -89,12 +86,12 @@ function formatRes (success, { logger, startMs, endMs }) {
   logger.info(`Success? ${success} -- total time (s): ${totalS}`)
 
   const res = `
-# HELP probe_duration_seconds Returns how long the probe took to complete in seconds
-# TYPE probe_duration_seconds gauge
-probe_duration_seconds ${totalS}
-# HELP probe_success Displays whether or not the probe was a success
-# TYPE probe_success gauge
-probe_success ${success ? 1 : 0}
+# HELP hyper_probe_duration_seconds Returns how long the probe took to complete in seconds
+# TYPE hyper_probe_duration_seconds gauge
+hyper_probe_duration_seconds ${totalS}
+# HELP hyper_probe_success Displays whether or not the probe was a success
+# TYPE hyper_probe_success gauge
+hyper_probe_success ${success ? 1 : 0}
 `
 
   return res

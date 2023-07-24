@@ -41,8 +41,8 @@ test('probe_success 1 for reachable key', async t => {
   const key = b4a.toString(core.key, 'hex')
   const res = await axios.get(`${url}${key}`, { validateStatus: null })
   t.is(res.status, 200)
-  t.ok(res.data.includes('probe_success 1'))
-  t.not(res.data.includes('probe_success 0'))
+  t.ok(res.data.includes('hyper_probe_success 1'))
+  t.not(res.data.includes('hyper_probe_success 0'))
 })
 
 test('probe_status 0 for unreachable key', async t => {
@@ -51,8 +51,8 @@ test('probe_status 0 for unreachable key', async t => {
   const key = 'a'.repeat(64)
   const res = await axios.get(`${url}${key}`, { validateStatus: null })
   t.is(res.status, 200)
-  t.ok(res.data.includes('probe_success 0'))
-  t.not(res.data.includes('probe_success 1'))
+  t.ok(res.data.includes('hyper_probe_success 0'))
+  t.not(res.data.includes('hyper_probe_success 1'))
 })
 
 test('400 status on invalid key', async t => {
