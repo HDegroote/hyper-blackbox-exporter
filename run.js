@@ -10,10 +10,8 @@ function loadConfig () {
   return {
     timeoutS: process.env.TIMEOUT_SEC || 5,
     port: parseInt(process.env.PORT || 21210),
-    dhtPort: parseInt(process.env.DHT_PORT || 0),
     logLevel: process.env.LOG_LEVEL || 'info',
-    host: process.env.HOST || '127.0.0.1',
-    dhtHost: process.env.DHT_HOST || '0.0.0.0'
+    host: process.env.HOST || '127.0.0.1'
   }
 }
 

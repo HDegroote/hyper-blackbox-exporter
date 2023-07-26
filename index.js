@@ -6,7 +6,7 @@ const { decode } = require('hypercore-id-encoding')
 const DHT = require('hyperdht')
 const { asHex } = require('hexkey-utils')
 
-async function setup ({ port, logger = true, timeoutS = 5, swarmArgs = {} } = {}) {
+async function setup ({ port, host, logger = true, timeoutS = 5, swarmArgs = {} } = {}) {
   const app = fastify({ logger })
   logger = app.log
 
@@ -79,7 +79,7 @@ async function setup ({ port, logger = true, timeoutS = 5, swarmArgs = {} } = {}
     return core.session()
   }
 
-  await app.listen({ port })
+  await app.listen({ port, host })
 
   return app
 }
