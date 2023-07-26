@@ -4,7 +4,6 @@ const Corestore = require('corestore')
 const ram = require('random-access-memory')
 const { decode } = require('hypercore-id-encoding')
 const DHT = require('hyperdht')
-const FIFO = require('fast-fifo')
 
 async function setup ({ port, logger = true, timeoutS = 5, swarmArgs = {} } = {}) {
   const app = fastify({ logger })
@@ -14,33 +13,16 @@ async function setup ({ port, logger = true, timeoutS = 5, swarmArgs = {} } = {}
   const store = new Corestore(ram)
   const swarm = new Hyperswarm({ dht })
 
-  // We don't want to keep the sockets open forever,
-  // as we are mostly interested in ensuring we can find
-  // keys in the DHT
-  const sTillDropConnection = timeoutS * 1000 * 2
-
-  const timeouts = new FIFO()
   swarm.on('connection', (socket) => {
     store.replicate(socket)
     socket.on('error', e => logger.info(e)) // Usually just unexpectedly closed
-
-    timeouts.push(setTimeout(
-      () => {
-        socket.destroy()
-        timeouts.shift()
-      }, sTillDropConnection
-    ))
   })
 
   app.addHook('onClose', async () => {
-    logger.info('Detroying the swarm')
+    logger.info('Cleaning up the swarm and corestore')
     await swarm.destroy()
-
-    // Clean up pending timeouts as they're no longer relevant (else we hang)
-    while (!timeouts.isEmpty()) clearTimeout(timeouts.shift())
-
     await store.close()
-    logger.info('Swarm destroyed')
+    logger.info('Swarm and corestore destroyed')
   })
 
   app.get('/probe', async function (req, res) {
