@@ -1,3 +1,5 @@
+#! /usr/bin/env node
+
 require('dotenv').config()
 const goodbye = require('graceful-goodbye')
 const pino = require('pino')
