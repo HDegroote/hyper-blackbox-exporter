@@ -42,8 +42,8 @@ This endpoint can be scraped with the following config, entering your own hyperc
   - job_name: hyperblackbox-exporter
     metrics_path: /probe
     scheme: https
-    scrape_timeout: 25s
-    scrape_interval: 30s
+    scrape_timeout: 10s
+    scrape_interval: 60s
     static_configs:
       - targets:
         - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
