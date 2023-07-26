@@ -1,6 +1,6 @@
 {
   "name": "hyper-blackbox-exporter",
-  "version": "0.0.1-alpha.1",
+  "version": "0.0.1-alpha.2",
   "description": "Prometheus blackbox exporter for Hypercore",
   "main": "index.js",
   "bin": {
