@@ -14,7 +14,7 @@
     "url": "git+https://github.com/HDegroote/hyper-blackbox-exporter.git"
   },
   "keywords": [
-    "Prometheys",
+    "Prometheus",
     "blackbox",
     "exporter",
     "hypercore"
