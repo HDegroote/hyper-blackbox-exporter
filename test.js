@@ -55,6 +55,17 @@ test('probe_status 0 for unreachable key', async t => {
   t.not(res.data.includes('hyper_probe_success 1'))
 })
 
+test('Contains the expected metrics', async t => {
+  const { url } = await getFixtures(t)
+
+  const key = 'a'.repeat(64)
+  const res = await axios.get(`${url}${key}`, { validateStatus: null })
+  t.is(res.status, 200)
+  t.ok(res.data.includes('hyper_probe_success'))
+  t.ok(res.data.includes('hyper_probe_nr_peers'))
+  t.ok(res.data.includes('hyper_probe_duration_seconds'))
+})
+
 test('400 status on invalid key', async t => {
   const { url } = await getFixtures(t)
 
