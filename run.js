@@ -6,6 +6,7 @@ const setup = require('./index.js')
 
 function loadConfig () {
   return {
+    timeoutS: process.env.TIMEOUT_SEC || 5,
     port: parseInt(process.env.PORT || 21210),
     dhtPort: parseInt(process.env.DHT_PORT || 0),
     logLevel: process.env.LOG_LEVEL || 'info',
