@@ -2,9 +2,9 @@ const fastify = require('fastify')
 const Hyperswarm = require('hyperswarm')
 const Corestore = require('corestore')
 const ram = require('random-access-memory')
-const { decode, normalize } = require('hypercore-id-encoding')
+const { decode } = require('hypercore-id-encoding')
 const DHT = require('hyperdht')
-const b4a = require('b4a')
+const { asHex } = require('hexkey-utils')
 
 async function setup ({ port, logger = true, timeoutS = 5, swarmArgs = {} } = {}) {
   const app = fastify({ logger })
@@ -16,7 +16,7 @@ async function setup ({ port, logger = true, timeoutS = 5, swarmArgs = {} } = {}
   const cores = new Map()
 
   swarm.on('connection', (socket, peerInfo) => {
-    const peerKey = b4a.toString(peerInfo.publicKey, 'hex')
+    const peerKey = asHex(peerInfo.publicKey)
     logger.info(`connected to peer ${peerKey} (total: ${swarm.connections.size})`)
     store.replicate(socket)
     socket.on('error', e => logger.info(e)) // Usually just unexpectedly closed
@@ -70,7 +70,7 @@ async function setup ({ port, logger = true, timeoutS = 5, swarmArgs = {} } = {}
 
   function getSessionOn (bufKey) {
     // Note: a core is currently never removed from the map
-    const normKey = normalize(bufKey)
+    const normKey = asHex(bufKey)
     const existingCore = cores.get(normKey)
     if (existingCore) return existingCore.session()
 
@@ -85,7 +85,7 @@ async function setup ({ port, logger = true, timeoutS = 5, swarmArgs = {} } = {}
 }
 
 function getMetrics ({ success, totalS, nrPeers }) {
-  const res = `
+  return `
 # HELP hyper_probe_duration_seconds Returns how long the probe took to complete in seconds
 # TYPE hyper_probe_duration_seconds gauge
 hyper_probe_duration_seconds ${totalS}
@@ -96,8 +96,6 @@ hyper_probe_success ${success ? 1 : 0}
 # TYPE hyper_probe_nr_peers gauge
 hyper_probe_nr_peers ${nrPeers}
 `
-
-  return res
 }
 
 module.exports = setup
