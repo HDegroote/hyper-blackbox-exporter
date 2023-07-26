@@ -5,7 +5,7 @@ A prometheus exporter to get basic metrics about hypercores. It uses the [multi-
 Includes metrics:
 - `hyper_probe_success`: whether a hypercore can be located and its first block downloaded
 - `hyper_probe_duration_seconds`: how long it takes to locate the hypercore and download the first block
-
+- `hyper_probe_nr_peers`: how many peers are serving this block (this is an underbound, the server might not connect to all of them)
 ## Install
 
 `npm i -g hyper-blackbox-exporter`
@@ -25,10 +25,13 @@ Output example:
 ```
 # HELP hyper_probe_duration_seconds Returns how long the probe took to complete in seconds
 # TYPE hyper_probe_duration_seconds gauge
-hyper_probe_duration_seconds 0.2541881100013852
+hyper_probe_duration_seconds 0.011095994994044303
 # HELP hyper_probe_success Displays whether or not the probe was a success
 # TYPE hyper_probe_success gauge
 hyper_probe_success 1
+# HELP hyper_probe_nr_peers Displays the number of peers who are serving this core
+# TYPE hyper_probe_nr_peers gauge
+hyper_probe_nr_peers 7
 ```
 
 ## Prometheus Config
