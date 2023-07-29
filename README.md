@@ -12,6 +12,10 @@ Includes metrics:
 
 ## Usage
 
+Note: can also be run as Docker, see [here](https://hub.docker.com/r/hdegroote/hyper-blackbox-exporter).
+
+CLI usage:
+
 `hyper-blackbox-exporter`
 
 Then from another terminal:
