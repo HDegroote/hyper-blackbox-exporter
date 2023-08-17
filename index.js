@@ -5,6 +5,7 @@ const ram = require('random-access-memory')
 const { decode } = require('hypercore-id-encoding')
 const DHT = require('hyperdht')
 const { asHex } = require('hexkey-utils')
+const safetyCatch = require('safety-catch')
 
 async function setup ({ port, host, logger = true, timeoutS = 5, swarmArgs = {} } = {}) {
   const app = fastify({ logger })
@@ -54,7 +55,13 @@ async function setup ({ port, host, logger = true, timeoutS = 5, swarmArgs = {} 
       } catch (e) { // Stay false
       } finally {
         // Clear up memory + ensure it needs downloading again if called again
-        await core.clear(0)
+        try {
+          await core.clear(0)
+        } catch (e) {
+          // TODO: remove catch when clear-bug fixed
+          // see https://github.com/holepunchto/hypercore/pull/391
+          logger.error(`Error while clearing: ${e}`)
+        }
       }
       const endMs = performance.now()
       const totalS = (endMs - startMs) / 1000
@@ -64,7 +71,7 @@ async function setup ({ port, host, logger = true, timeoutS = 5, swarmArgs = {} 
       const data = getMetrics({ success, totalS, nrPeers })
       res.send(data)
     } finally {
-      await core.close()
+      core.close().catch(safetyCatch)
     }
   })
 
