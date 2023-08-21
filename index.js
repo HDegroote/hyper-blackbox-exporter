@@ -55,13 +55,7 @@ async function setup ({ port, host, logger = true, timeoutS = 5, swarmArgs = {} 
       } catch (e) { // Stay false
       } finally {
         // Clear up memory + ensure it needs downloading again if called again
-        try {
-          await core.clear(0)
-        } catch (e) {
-          // TODO: remove catch when clear-bug fixed
-          // see https://github.com/holepunchto/hypercore/pull/391
-          logger.error(`Error while clearing: ${e}`)
-        }
+        await core.clear(0)
       }
       const endMs = performance.now()
       const totalS = (endMs - startMs) / 1000
