@@ -7,11 +7,11 @@ const DHT = require('hyperdht')
 const { asHex } = require('hexkey-utils')
 const safetyCatch = require('safety-catch')
 
-async function setup ({ port, host, logger = true, timeoutS = 5, swarmArgs = {} } = {}) {
+async function setup ({ port, host = '127.0.0.1', logger = true, timeoutS = 5, bootstrap, dhtPort } = {}) {
   const app = fastify({ logger })
   logger = app.log
 
-  const dht = new DHT(swarmArgs)
+  const dht = new DHT({ bootstrap, port: dhtPort })
   const store = new Corestore(ram)
   const swarm = new Hyperswarm({ dht })
   const cores = new Map()

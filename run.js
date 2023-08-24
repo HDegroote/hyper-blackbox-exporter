@@ -11,7 +11,8 @@ function loadConfig () {
     timeoutS: process.env.TIMEOUT_SEC || 5,
     port: parseInt(process.env.PORT || 21210),
     logLevel: process.env.LOG_LEVEL || 'info',
-    host: process.env.HOST || '127.0.0.1'
+    host: process.env.HOST || '127.0.0.1',
+    dhtPort: process.env.DHT_PORT
   }
 }
 
