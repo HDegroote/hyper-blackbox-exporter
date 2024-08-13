@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@hyperswarm/testnet": "^3.1.4",
-    "axios": "^1.4.0",
+    "axios": "^1.7.4",
     "brittle": "^3.3.2",
     "standard": "^17.1.0"
   }
